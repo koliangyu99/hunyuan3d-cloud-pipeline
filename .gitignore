@@ -1,0 +1,18 @@
+# Ignore the entire cloned Hunyuan3D repository
+Hunyuan3D/
+
+# Ignore any manually downloaded model files
+hunyuan3d_models/
+
+# Ignore Python's cache and virtual environments
+__pycache__/
+*.pyc
+venv/
+env/
+
+# Ignore the contents of the simulated GCS buckets
+gcs_buckets/inputs/*
+gcs_buckets/outputs/*
+
+# Ignore OS-specific files
+.DS_Store

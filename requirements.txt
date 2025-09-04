@@ -1,0 +1,4 @@
+Flask
+gunicorn
+rembg[cpu] # Using CPU version for easier setup. Change to rembg[gpu] if you have a configured NVIDIA GPU.
+torch
