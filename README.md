@@ -30,7 +30,7 @@ This setup is designed to be efficient. It separates the slow, one-time model do
 
     Download the code and the necessary model files.
     ```bash
-    git clone [https://github.com/koliangyu99/hunyuan3d-cloud-pipeline.git](https://github.com/koliangyu99/hunyuan3d-cloud-pipeline.git)
+    git clone https://github.com/koliangyu99/hunyuan3d-cloud-pipeline.git
     cd hunyuan3d-cloud-pipeline
     git submodule update --init --recursive
     ```
