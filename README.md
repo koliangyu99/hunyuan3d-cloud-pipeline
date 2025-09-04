@@ -32,7 +32,7 @@ This setup is designed to be efficient. It separates the slow, one-time model do
     ```bash
     git clone https://github.com/koliangyu99/hunyuan3d-cloud-pipeline.git
     cd hunyuan3d-cloud-pipeline
-    git submodule update --init --recursive
+    
     ```
 
 2.  **Build the Docker Image**
