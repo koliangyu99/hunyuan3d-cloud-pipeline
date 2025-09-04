@@ -1,62 +1,53 @@
-# Hunyuan3D Cloud-Ready Generation Pipeline
+# Hunyuan3D Generation Pipeline
 
-This project provides a Python Flask application that demonstrates a robust, cloud-native architecture for running the Hunyuan3D model. The entire application is containerized with Docker, allowing for easy local testing and deployment to cloud services like Google Cloud Run.
+This project provides an easy way to run the Hunyuan3D model using Docker. It starts a simple web server (API) that you can use to create 3D models from text and images.
 
-The application exposes an asynchronous API for generating 3D models from text prompts and input images.
-
----
-
-## Core Architecture
-
-This application simulates a scalable cloud architecture locally, separating the one-time model setup from the recurring inference tasks. The asynchronous design ensures the API remains fast and responsive, even while the heavy 3D generation task runs in the background.
-
-* **Build-Time (Initialization in `Dockerfile`)**:
-    * The Docker image build process downloads the large, pre-trained Hunyuan3D model weights from Hugging Face. This is done **only once** when the image is created.
-
-* **Run-Time (Live Application)**:
-    * **API Service**: A Flask/Gunicorn server accepts job requests at `/generate` and provides status updates at `/status/<job_id>`. This is a lightweight and fast entry point.
-    * **Task Queue**: An in-memory queue decouples the API from the heavy processing. In a real cloud environment, this would be replaced by a service like Google Cloud Tasks or Pub/Sub.
-    * **Background Worker**: A background thread pulls jobs from the queue and uses the globally loaded Hunyuan3D model to perform inference. This simulates a separate, long-running worker service (e.g., a Cloud Run instance with a GPU).
-    * **Object Storage**: Local folders (`/gcs_buckets`) are used to simulate cloud storage buckets for inputs and outputs.
+Because it's a Docker application, it's simple to run on your own machine or deploy to the cloud.
 
 ---
 
-## Setup and Usage
+## How It Works
+
+This setup is designed to be efficient. It separates the slow, one-time model download from the actual 3D generation.
+
+* **One-Time Setup:** When you build the Docker image, it downloads the large Hunyuan3D model. This only happens once.
+* **Running the App:**
+    * A **fast API** instantly accepts your request to create a 3D model.
+    * A **background worker** takes the request and does the heavy lifting of generating the 3D model. This keeps the API responsive.
+    * It uses local folders (`gcs_buckets`) to simulate cloud storage, making it easy to provide input images and get your finished 3D models.
+
+---
+
+## Getting Started
 
 ### Prerequisites
 * [Git](https://git-scm.com/)
 * [Docker](https://docs.docker.com/get-docker/)
 
-### Instructions
+### Step-by-Step Instructions
 
-1.  **Clone the Repository**
+1.  **Clone the Project**
 
-    First, clone this repository to your local machine.
+    Download the code and the necessary model files.
     ```bash
     git clone [https://github.com/koliangyu99/hunyuan3d-cloud-pipeline.git](https://github.com/koliangyu99/hunyuan3d-cloud-pipeline.git)
     cd hunyuan3d-cloud-pipeline
-    ```
-
-2.  **Initialize the Hunyuan3D Submodule**
-
-    This project includes the official Hunyuan3D repository as a Git submodule. To download the necessary model code, run:
-    ```bash
     git submodule update --init --recursive
     ```
-    This will pull the Hunyuan3D repository into the correct directory.
 
-3.  **Build the Docker Image**
+2.  **Build the Docker Image**
 
-    This command executes the steps in the `Dockerfile`, including the multi-gigabyte model download. **This will take a long time.**
+    This command packages the app and downloads the large 3D model.
+    **Warning:** This will take a long time and download several gigabytes.
     ```bash
     docker build -t hunyuan3d-app .
     ```
 
-4.  **Run the Docker Container**
+3.  **Run the Application**
 
-    This command starts the application and maps the local `gcs_buckets` folders to the container, so you can easily add inputs and see the outputs.
+    Start the server. This also connects the `gcs_buckets` folders on your computer to the folders inside the container, so you can easily access your files.
     ```bash
-    # Create local directories first
+    # Create the input/output folders on your machine
     mkdir -p gcs_buckets/inputs gcs_buckets/outputs
 
     # Run the container
@@ -65,15 +56,19 @@ This application simulates a scalable cloud architecture locally, separating the
       -v $(pwd)/gcs_buckets/outputs:/app/gcs_buckets/outputs \
       hunyuan3d-app
     ```
-    Your server is now running and accessible at `http://localhost:5001`.
+    The server is now running at `http://localhost:5001`.
 
-5.  **Use the API**
+---
 
-    Place your input image (e.g., `car.png`) in the `gcs_buckets/inputs` folder.
+## How to Use the API
 
-    **a. Submit a Generation Job**
+1.  **Add Your Input Image**
 
-    Use `curl` or any API client to send a request.
+    Place an image (e.g., `car.png`) into the `gcs_buckets/inputs` folder on your computer.
+
+2.  **Start a Generation Job**
+
+    Send a request to the API with your prompt, input image name, and desired output filename.
     ```bash
     curl -X POST [http://127.0.0.1:5001/generate](http://127.0.0.1:5001/generate) \
     -H "Content-Type: application/json" \
@@ -83,12 +78,16 @@ This application simulates a scalable cloud architecture locally, separating the
         "output_filename": "red_sports_car.glb"
     }'
     ```
-    The server will respond with a `job_id`.
+    The server will immediately reply with a `job_id`.
 
-    **b. Check the Job Status**
+3.  **Check the Job Status**
 
-    Use the `job_id` to poll the status endpoint.
+    Use the `job_id` to see if your model is ready.
     ```bash
     curl [http://127.0.0.1:5001/status/YOUR_JOB_ID_HERE](http://127.0.0.1:5001/status/YOUR_JOB_ID_HERE)
     ```
-    When the status is "completed", your `.glb` file will be available in the `gcs_buckets/outputs` folder.
+    Keep checking this endpoint until the status says `"completed"`.
+
+4.  **Get Your 3D Model**
+
+    Once the job is complete, your new 3D model (e.g., `red_sports_car.glb`) will appear in the `gcs_buckets/outputs` folder.
