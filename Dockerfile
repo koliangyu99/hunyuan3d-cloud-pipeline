@@ -1,29 +1,38 @@
-# Use an official Python runtime as a parent image
-# For GPU support, use an image like: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
-FROM python:3.10-slim
+# Use Python base image with CUDA support if needed
+FROM python:3.9-slim
 
+# Install system dependencies for 3D processing
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y git
+# Copy requirements first (for better Docker layer caching)
+COPY requirements.txt .
 
-COPY Hunyuan3D/requirements.txt /app/Hunyuan3D/requirements.txt
-# We will create requirements.txt for the app later
-COPY requirements.txt /app/requirements.txt
-
-RUN pip install --no-cache-dir -r Hunyuan3D/requirements.txt
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir huggingface_hub
 
-ENV HF_HOME=/app/huggingface_cache
+# Copy application code
+COPY . .
 
-# This command downloads the model files during the build
-RUN huggingface-cli download tencent/Hunyuan3D-2 --repo-type model --local-dir /app/hunyuan3d_models --local-dir-use-symlinks False
+# Create directories for uploads and outputs
+RUN mkdir -p uploads outputs temp
 
-COPY hunyuan_pipeline_app.py .
-COPY Hunyuan3D/ ./Hunyuan3D/
+# Expose port
+EXPOSE 8080
 
-RUN mkdir -p /app/gcs_buckets/inputs && mkdir -p /app/gcs_buckets/outputs
+# Set environment variables
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=development
 
-EXPOSE 5001
-
-CMD ["gunicorn", "--workers", "1", "--threads", "8", "--timeout", "300", "-b", "0.0.0.0:5001", "hunyuan_pipeline_app:app"]
+# Run the application
+CMD ["python", "app.py"]
