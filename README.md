@@ -47,29 +47,29 @@ This setup is designed to be efficient. It separates the slow, one-time model do
 
     Start the server. This also connects the `gcs_buckets` folders on your computer to the folders inside the container, so you can easily access your files.
     ```bash
-# Run the container with port mapping
-docker run -p 8080:8080 --name hunyuan3d-test hunyuan3d-local
+      # Run the container with port mapping
+      docker run -p 8080:8080 --name hunyuan3d-test hunyuan3d-local
 
-# Alternative: Run with volume mounting for development
-docker run -p 8080:8080 -v $(pwd):/app --name hunyuan3d-dev hunyuan3d-local
+      # Alternative: Run with volume mounting for development
+      docker run -p 8080:8080 -v $(pwd):/app --name hunyuan3d-dev hunyuan3d-local
 
-# Test the health endpoint
-curl http://localhost:8080/health
+      # Test the health endpoint
+      curl http://localhost:8080/health
 
-# Test with a sample image (you'll need to create test_image.json)
-curl -X POST http://localhost:8080/generate \
-  -H "Content-Type: application/json" \
-  -d @test_image.json
+      # Test with a sample image (you'll need to create test_image.json)
+      curl -X POST http://localhost:8080/generate \
+        -H "Content-Type: application/json" \
+        -d @test_image.json
 
-# View logs
-docker logs hunyuan3d-test
+      # View logs
+      docker logs hunyuan3d-test
 
-# Stop and remove container
-docker stop hunyuan3d-test
-docker rm hunyuan3d-test
+      # Stop and remove container
+      docker stop hunyuan3d-test
+      docker rm hunyuan3d-test
 
-# Remove image if needed
-docker rmi hunyuan3d-local
+      # Remove image if needed
+      docker rmi hunyuan3d-local
     ```
     The server is now running at `http://localhost:5001`.
 
