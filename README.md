@@ -71,6 +71,5 @@ This setup is designed to be efficient. It separates the slow, one-time model do
       # Remove image if needed
       docker rmi hunyuan3d-local
     ```
-    The server is now running at `http://localhost:5001`.
 
----
+
