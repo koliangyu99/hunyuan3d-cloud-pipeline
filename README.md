@@ -40,21 +40,36 @@ This setup is designed to be efficient. It separates the slow, one-time model do
     This command packages the app and downloads the large 3D model.
     **Warning:** This will take a long time and download several gigabytes.
     ```bash
-    docker build -t hunyuan3d-app .
+    docker build -t hunyuan3d-local .
     ```
 
 3.  **Run the Application**
 
     Start the server. This also connects the `gcs_buckets` folders on your computer to the folders inside the container, so you can easily access your files.
     ```bash
-    # Create the input/output folders on your machine
-    mkdir -p gcs_buckets/inputs gcs_buckets/outputs
+# Run the container with port mapping
+docker run -p 8080:8080 --name hunyuan3d-test hunyuan3d-local
 
-    # Run the container
-    docker run -p 5001:5001 \
-      -v $(pwd)/gcs_buckets/inputs:/app/gcs_buckets/inputs \
-      -v $(pwd)/gcs_buckets/outputs:/app/gcs_buckets/outputs \
-      hunyuan3d-app
+# Alternative: Run with volume mounting for development
+docker run -p 8080:8080 -v $(pwd):/app --name hunyuan3d-dev hunyuan3d-local
+
+# Test the health endpoint
+curl http://localhost:8080/health
+
+# Test with a sample image (you'll need to create test_image.json)
+curl -X POST http://localhost:8080/generate \
+  -H "Content-Type: application/json" \
+  -d @test_image.json
+
+# View logs
+docker logs hunyuan3d-test
+
+# Stop and remove container
+docker stop hunyuan3d-test
+docker rm hunyuan3d-test
+
+# Remove image if needed
+docker rmi hunyuan3d-local
     ```
     The server is now running at `http://localhost:5001`.
 
