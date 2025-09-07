@@ -79,7 +79,7 @@ This setup is designed to be efficient. It separates the slow, one-time model do
 
 1.  **Add Your Input Image**
 
-    Place an image (e.g., `car.png`) into the `gcs_buckets/inputs` folder on your computer.
+    Place an image (e.g., `car.png`) into the `test_images` folder on your computer.
 
 2.  **Start a Generation Job**
 
